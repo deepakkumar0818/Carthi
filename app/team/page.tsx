@@ -148,25 +148,25 @@ export default function TeamPage() {
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-2">
                 Team Management
               </h1>
-              <p className="text-gray-600">
-                Manage your sales team and track their performance
+              <p className="text-sm md:text-base text-gray-600">
+                Manage your sales team and track performance
               </p>
             </div>
-            <Button size="lg" className="shadow-xl">
-              <Plus className="h-5 w-5 mr-2" />
-              Add Team Member
+            <Button size="md" className="shadow-xl w-full sm:w-auto">
+              <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+              Add Member
             </Button>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
           <StatCard
             title="Team Members"
             value={teamMembers.length.toString()}
@@ -194,7 +194,7 @@ export default function TeamPage() {
         </div>
 
         {/* Search and Filter */}
-        <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-6 mb-8">
+        <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-4 md:p-6 mb-6 md:mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -225,7 +225,7 @@ export default function TeamPage() {
         </div>
 
         {/* Team Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filteredMembers.map((member) => (
             <TeamMemberCard key={member.id} member={member} />
           ))}
@@ -246,14 +246,14 @@ const StatCard = ({
   icon: React.ElementType;
   gradient: string;
 }) => (
-  <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-6 card-hover">
-    <div className="flex items-center justify-between mb-4">
-      <div className={`h-12 w-12 bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center shadow-lg`}>
-        <Icon className="h-6 w-6 text-white" />
+  <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-4 md:p-6 card-hover">
+    <div className="flex items-center justify-between mb-3 md:mb-4">
+      <div className={`h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br ${gradient} rounded-lg md:rounded-xl flex items-center justify-center shadow-lg`}>
+        <Icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
       </div>
     </div>
-    <p className="text-gray-600 text-sm font-medium mb-1">{title}</p>
-    <p className="text-3xl font-bold text-gray-900">{value}</p>
+    <p className="text-gray-600 text-xs md:text-sm font-medium mb-1">{title}</p>
+    <p className="text-2xl md:text-3xl font-bold text-gray-900">{value}</p>
   </div>
 );
 

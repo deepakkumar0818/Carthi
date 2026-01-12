@@ -6,7 +6,6 @@ import {
   Lock,
   Bell,
   Globe,
-  CreditCard,
   Shield,
   Mail,
   Phone,
@@ -24,25 +23,25 @@ import { Select } from "@/components/Select";
 import { showToast } from "@/components/Toaster";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<"profile" | "security" | "notifications" | "company" | "preferences" | "billing">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "security" | "notifications" | "company" | "preferences">("profile");
 
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Settings
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm md:text-base text-gray-600">
             Manage your account settings and preferences
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-4 sticky top-24">
+            <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-3 md:p-4 sticky top-24">
               <nav className="space-y-2">
                 <SettingsNavItem
                   icon={User}
@@ -74,25 +73,18 @@ export default function SettingsPage() {
                   active={activeTab === "preferences"}
                   onClick={() => setActiveTab("preferences")}
                 />
-                <SettingsNavItem
-                  icon={CreditCard}
-                  label="Billing"
-                  active={activeTab === "billing"}
-                  onClick={() => setActiveTab("billing")}
-                />
               </nav>
             </div>
           </div>
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-8">
+            <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-4 md:p-8">
               {activeTab === "profile" && <ProfileSettings />}
               {activeTab === "security" && <SecuritySettings />}
               {activeTab === "notifications" && <NotificationSettings />}
               {activeTab === "company" && <CompanySettings />}
               {activeTab === "preferences" && <PreferenceSettings />}
-              {activeTab === "billing" && <BillingSettings />}
             </div>
           </div>
         </div>
@@ -114,13 +106,13 @@ const SettingsNavItem = ({
 }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
+    className={`w-full flex items-center space-x-2 md:space-x-3 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl font-semibold text-xs md:text-sm transition-all ${
       active
         ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md"
         : "text-gray-700 hover:bg-gray-100"
     }`}
   >
-    <Icon className="h-5 w-5" />
+    <Icon className="h-4 w-4 md:h-5 md:w-5" />
     <span>{label}</span>
   </button>
 );
@@ -306,7 +298,7 @@ const CompanySettings = () => {
           <textarea
             rows={3}
             className="block w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm font-medium placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200 transition-all"
-            defaultValue="123 Business Park, Andheri East, Mumbai - 400069, Maharashtra, India"
+            defaultValue="SG Highway, Bodakdev, Ahmedabad - 380054, Gujarat, India"
           />
         </div>
 
@@ -420,83 +412,6 @@ const PreferenceSettings = () => {
   );
 };
 
-const BillingSettings = () => {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Billing & Subscription</h2>
-        <p className="text-gray-600">Manage your subscription and payment methods</p>
-      </div>
-
-      {/* Current Plan */}
-      <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-xl p-6 border-2 border-primary-200">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-xl font-bold text-gray-900">Professional Plan</h3>
-            <p className="text-gray-600 mt-1">Active until Dec 31, 2026</p>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-              ₹9,999
-            </p>
-            <p className="text-sm text-gray-600">per month</p>
-          </div>
-        </div>
-        <div className="flex space-x-3">
-          <Button variant="outline" size="sm">Change Plan</Button>
-          <Button variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">
-            Cancel Subscription
-          </Button>
-        </div>
-      </div>
-
-      {/* Payment Method */}
-      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
-        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-          <CreditCard className="h-5 w-5 mr-2 text-green-600" />
-          Payment Method
-        </h3>
-        <div className="flex items-center justify-between bg-white rounded-xl p-4 border border-gray-200">
-          <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <CreditCard className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="font-bold text-gray-900">•••• •••• •••• 4242</p>
-              <p className="text-sm text-gray-600">Expires 12/2026</p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm">Update</Button>
-        </div>
-      </div>
-
-      {/* Billing History */}
-      <div>
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Billing History</h3>
-        <div className="space-y-3">
-          <BillingHistoryItem
-            date="Dec 1, 2024"
-            amount="₹9,999"
-            status="Paid"
-            invoice="INV-2024-12-001"
-          />
-          <BillingHistoryItem
-            date="Nov 1, 2024"
-            amount="₹9,999"
-            status="Paid"
-            invoice="INV-2024-11-001"
-          />
-          <BillingHistoryItem
-            date="Oct 1, 2024"
-            amount="₹9,999"
-            status="Paid"
-            invoice="INV-2024-10-001"
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Helper Components
 const SessionItem = ({
@@ -563,31 +478,3 @@ const NotificationToggle = ({
   );
 };
 
-const BillingHistoryItem = ({
-  date,
-  amount,
-  status,
-  invoice,
-}: {
-  date: string;
-  amount: string;
-  status: string;
-  invoice: string;
-}) => (
-  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 hover:shadow-md transition-all">
-    <div>
-      <p className="font-bold text-gray-900">{date}</p>
-      <p className="text-sm text-gray-600">{invoice}</p>
-    </div>
-    <div className="flex items-center space-x-4">
-      <p className="font-bold text-gray-900">{amount}</p>
-      <span className="text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">
-        {status}
-      </span>
-      <Button variant="outline" size="sm">
-        <Download className="h-4 w-4 mr-2" />
-        Download
-      </Button>
-    </div>
-  </div>
-);

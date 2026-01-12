@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const addLeadSchema = z.object({
   // Customer Details
-  customerName: z.string().min(2, "Name must be at least 2 characters"),
+  customerName: z.string().min(2, "Dealer name must be at least 2 characters"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   alternatePhone: z.string().optional(),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),

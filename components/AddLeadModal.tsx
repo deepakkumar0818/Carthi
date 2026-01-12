@@ -8,6 +8,7 @@ import { Button } from "./Button";
 import { Input } from "./Input";
 import { Select } from "./Select";
 import { addLeadSchema, AddLeadFormData } from "@/lib/validations";
+import { gujaratCityOptions } from "@/lib/gujaratCities";
 import { User, Car, MapPin, Phone, Mail, Calendar, Fuel, Settings } from "lucide-react";
 
 interface AddLeadModalProps {
@@ -76,7 +77,7 @@ const AddLeadModal = ({ isOpen, onClose, onAdd }: AddLeadModalProps) => {
               Step {currentStep} of {totalSteps}
             </span>
             <span className="text-sm font-semibold text-primary-600">
-              {currentStep === 1 ? "Customer Details" : "Vehicle Details"}
+              {currentStep === 1 ? "Dealer Details" : "Vehicle Details"}
             </span>
           </div>
           <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -93,13 +94,13 @@ const AddLeadModal = ({ isOpen, onClose, onAdd }: AddLeadModalProps) => {
             <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                 <User className="h-5 w-5 mr-2 text-blue-600" />
-                Customer Information
+                Dealer Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <Input
-                    label="Customer Name *"
-                    placeholder="Enter full name"
+                    label="Dealer Name *"
+                    placeholder="Enter dealer name"
                     error={errors.customerName?.message}
                     {...register("customerName")}
                   />
@@ -121,16 +122,31 @@ const AddLeadModal = ({ isOpen, onClose, onAdd }: AddLeadModalProps) => {
                 <Input
                   label="Email Address"
                   type="email"
-                  placeholder="customer@email.com"
+                  placeholder="dealer@email.com"
                   error={errors.email?.message}
                   {...register("email")}
                 />
-                <Input
-                  label="City *"
-                  placeholder="Mumbai"
-                  error={errors.city?.message}
-                  {...register("city")}
-                />
+                <div className="w-full">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    City (Gujarat) *
+                  </label>
+                  <select
+                    className="block w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm font-medium focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200 transition-all"
+                    {...register("city")}
+                  >
+                    <option value="">Select City</option>
+                    {gujaratCityOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.city && (
+                    <p className="mt-2 text-sm font-medium text-red-600">
+                      {errors.city.message}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 

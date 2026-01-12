@@ -122,25 +122,25 @@ export default function LeadsPage() {
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-2">
                 Lead Management
               </h1>
-              <p className="text-gray-600">
-                Track and manage all your used car leads in one place
+              <p className="text-sm md:text-base text-gray-600">
+                Track and manage all your used car leads
               </p>
             </div>
-            <Button size="lg" className="shadow-xl" onClick={() => setShowAddModal(true)}>
-              <Plus className="h-5 w-5 mr-2" />
-              Add New Lead
+            <Button size="md" className="shadow-xl w-full sm:w-auto" onClick={() => setShowAddModal(true)}>
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              <span className="sm:inline">Add Lead</span>
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
           <StatCard
             title="Total Leads"
             value={stats.total}
@@ -264,23 +264,73 @@ export default function LeadsPage() {
           )}
         </div>
 
-        {/* Leads Grid */}
+        {/* Leads - Mobile Card View / Desktop Table View */}
         {filteredLeads.length === 0 ? (
-          <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-12 text-center">
+          <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-8 md:p-12 text-center">
             <div className="max-w-md mx-auto">
-              <div className="h-24 w-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="h-12 w-12 text-gray-400" />
+              <div className="h-16 w-16 md:h-24 md:w-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="h-8 w-8 md:h-12 md:w-12 text-gray-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No leads found</h3>
-              <p className="text-gray-600">Try adjusting your search or filter criteria</p>
+              <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">No leads found</h3>
+              <p className="text-sm md:text-base text-gray-600">Try adjusting your search or filter criteria</p>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {filteredLeads.map((lead) => (
-              <LeadCard key={lead.id} lead={lead} />
-            ))}
-          </div>
+          <>
+            {/* Mobile Card View */}
+            <div className="block md:hidden space-y-4">
+              {filteredLeads.map((lead) => (
+                <MobileLeadCard key={lead.id} lead={lead} />
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block glass-effect rounded-2xl shadow-soft border border-white/20 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10">
+                    <tr>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-16">
+                        ID
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-40">
+                        Dealer
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-44">
+                        Contact
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-48">
+                        Vehicle
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-28">
+                        City
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-28">
+                        Price
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-24">
+                        Source
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-40">
+                        Status
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-28">
+                        Created
+                      </th>
+                      <th className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider w-20">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {filteredLeads.map((lead) => (
+                      <LeadRow key={lead.id} lead={lead} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
@@ -307,117 +357,165 @@ const StatCard = ({
   gradient: string;
   trend: string;
 }) => (
-  <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-6 card-hover">
-    <div className="flex items-center justify-between mb-4">
-      <div className={`h-12 w-12 bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center shadow-lg`}>
-        <Icon className="h-6 w-6 text-white" />
+  <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-4 md:p-6 card-hover">
+    <div className="flex items-center justify-between mb-2 md:mb-4">
+      <div className={`h-8 w-8 md:h-12 md:w-12 bg-gradient-to-br ${gradient} rounded-lg md:rounded-xl flex items-center justify-center shadow-lg`}>
+        <Icon className="h-4 w-4 md:h-6 md:w-6 text-white" />
       </div>
-      <span className="text-green-600 text-sm font-bold bg-green-50 px-3 py-1 rounded-full">
+      <span className="text-green-600 text-[10px] md:text-sm font-bold bg-green-50 px-2 md:px-3 py-0.5 md:py-1 rounded-full">
         {trend}
       </span>
     </div>
-    <p className="text-gray-600 text-sm font-medium mb-1">{title}</p>
-    <p className="text-3xl font-bold text-gray-900">{value}</p>
+    <p className="text-gray-600 text-xs md:text-sm font-medium mb-1">{title}</p>
+    <p className="text-xl md:text-3xl font-bold text-gray-900">{value}</p>
   </div>
 );
 
-const LeadCard = ({ lead }: { lead: Lead }) => (
+// Mobile Card Component
+const MobileLeadCard = ({ lead }: { lead: Lead }) => (
   <Link href={`/leads/${lead.id}`}>
-    <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-6 card-hover cursor-pointer group">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-4">
-          <div className="h-14 w-14 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">
+    <div className="glass-effect rounded-xl shadow-soft border border-white/20 p-4 hover:shadow-lg transition-all">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="h-10 w-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center shadow-md">
+            <span className="text-white font-bold text-sm">
               {lead.customer.name.charAt(0)}
             </span>
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
-              {lead.customer.name}
-            </h3>
-            <p className="text-sm text-gray-600 font-medium">Lead ID: {lead.id}</p>
+            <p className="font-bold text-gray-900">{lead.customer.name}</p>
+            <p className="text-xs text-gray-500">{lead.id}</p>
           </div>
         </div>
-        <div className="flex flex-col items-end space-y-2">
-          <Badge variant="status">{lead.status}</Badge>
+        <Badge variant="status">{lead.status}</Badge>
+      </div>
+
+      {/* Vehicle */}
+      <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-3 mb-3">
+        <p className="text-xs font-bold text-blue-600 mb-1">VEHICLE</p>
+        <p className="text-sm font-bold text-gray-900">
+          {lead.vehicle.brand} {lead.vehicle.model}
+        </p>
+        <p className="text-xs text-gray-600">{lead.vehicle.variant}</p>
+        <div className="flex gap-1 mt-2">
+          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold">
+            {lead.vehicle.fuelType}
+          </span>
+          <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-semibold">
+            {lead.vehicle.transmission}
+          </span>
+        </div>
+      </div>
+
+      {/* Info Grid */}
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <p className="text-xs text-gray-500">Contact</p>
+          <p className="text-sm font-semibold text-gray-900">{lead.customer.phone}</p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">City</p>
+          <p className="text-sm font-semibold text-gray-900">{lead.customer.city}</p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">Price</p>
+          <p className="text-sm font-bold text-green-600">
+            {lead.vehicle.expectedPrice ? formatCurrency(lead.vehicle.expectedPrice) : "-"}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">Source</p>
           <Badge>{lead.customer.source}</Badge>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-        {/* Vehicle Info */}
-        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100">
-          <p className="text-xs font-semibold text-blue-600 mb-2">VEHICLE DETAILS</p>
-          <p className="text-lg font-bold text-gray-900">
-            {lead.vehicle.brand} {lead.vehicle.model}
-          </p>
-          <p className="text-sm text-gray-600">{lead.vehicle.variant}</p>
-          <div className="flex items-center gap-2 mt-2">
-            <Badge>{lead.vehicle.fuelType}</Badge>
-            <Badge>{lead.vehicle.transmission}</Badge>
-          </div>
-          <p className="text-xs text-gray-500 mt-2">
-            {lead.vehicle.registrationYear} • {lead.vehicle.kmsDriven.toLocaleString()} km
-          </p>
-        </div>
-
-        {/* Contact Info */}
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
-          <p className="text-xs font-semibold text-purple-600 mb-2">CONTACT INFO</p>
-          <p className="text-sm font-bold text-gray-900">{lead.customer.phone}</p>
-          {lead.customer.email && (
-            <p className="text-xs text-gray-600 mt-1">{lead.customer.email}</p>
-          )}
-          <p className="text-sm text-gray-600 mt-2 flex items-center">
-            <span className="inline-block h-2 w-2 bg-purple-500 rounded-full mr-2"></span>
-            {lead.customer.city}
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            Sales: {lead.customer.assignedSalesExecutive}
-          </p>
-        </div>
-
-        {/* Pricing Info */}
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-          <p className="text-xs font-semibold text-green-600 mb-2">PRICING</p>
-          {lead.vehicle.expectedPrice && (
-            <div className="mb-2">
-              <p className="text-xs text-gray-600">Expected Price</p>
-              <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(lead.vehicle.expectedPrice)}
-              </p>
-            </div>
-          )}
-          {lead.valuation.finalOfferPrice && (
-            <div>
-              <p className="text-xs text-gray-600">Final Offer</p>
-              <p className="text-md font-bold text-green-600">
-                {formatCurrency(lead.valuation.finalOfferPrice)}
-              </p>
-            </div>
-          )}
-          {!lead.vehicle.expectedPrice && !lead.valuation.finalOfferPrice && (
-            <p className="text-gray-500 italic">Pending valuation</p>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-        <div className="flex items-center space-x-6 text-sm">
-          <div>
-            <span className="text-gray-500">Created:</span>
-            <span className="ml-2 font-semibold text-gray-900">{formatDate(lead.createdAt)}</span>
-          </div>
-          <div>
-            <span className="text-gray-500">Updated:</span>
-            <span className="ml-2 font-semibold text-gray-900">{formatDate(lead.updatedAt)}</span>
-          </div>
-        </div>
-        <div className="flex items-center text-primary-600 font-semibold group-hover:text-primary-700">
-          <span className="mr-2">View Details</span>
-          <Eye className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-        </div>
+      {/* Footer */}
+      <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+        <p className="text-xs text-gray-500">
+          {formatDate(lead.createdAt)}
+        </p>
+        <button className="text-primary-600 font-semibold text-sm flex items-center gap-1">
+          View <Eye className="h-4 w-4" />
+        </button>
       </div>
     </div>
   </Link>
+);
+
+// Desktop Table Row
+const LeadRow = ({ lead }: { lead: Lead }) => (
+  <tr className="hover:bg-blue-50/50 transition-colors group">
+    <td className="px-3 py-3 whitespace-nowrap">
+      <Link
+        href={`/leads/${lead.id}`}
+        className="text-sm font-bold text-primary-600 hover:text-primary-700"
+      >
+        {lead.id}
+      </Link>
+    </td>
+    <td className="px-3 py-3 whitespace-nowrap">
+      <div className="flex items-center gap-2">
+        <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
+          <span className="text-white font-bold text-xs">
+            {lead.customer.name.charAt(0)}
+          </span>
+        </div>
+        <span className="text-sm font-semibold text-gray-900 truncate">{lead.customer.name}</span>
+      </div>
+    </td>
+    <td className="px-3 py-3">
+      <div className="text-xs">
+        <p className="font-semibold text-gray-900">{lead.customer.phone}</p>
+        {lead.customer.email && (
+          <p className="text-gray-500 truncate">{lead.customer.email}</p>
+        )}
+      </div>
+    </td>
+    <td className="px-3 py-3">
+      <div className="text-xs">
+        <p className="font-bold text-gray-900">
+          {lead.vehicle.brand} {lead.vehicle.model}
+        </p>
+        <p className="text-gray-600 text-[10px]">{lead.vehicle.variant}</p>
+        <div className="flex gap-1 mt-1">
+          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] font-semibold">
+            {lead.vehicle.fuelType}
+          </span>
+          <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[9px] font-semibold">
+            {lead.vehicle.transmission}
+          </span>
+        </div>
+      </div>
+    </td>
+    <td className="px-3 py-3 whitespace-nowrap">
+      <span className="text-xs font-medium text-gray-900">{lead.customer.city}</span>
+    </td>
+    <td className="px-3 py-3 whitespace-nowrap">
+      <span className="text-xs font-bold text-green-600">
+        {lead.vehicle.expectedPrice
+          ? formatCurrency(lead.vehicle.expectedPrice)
+          : "-"}
+      </span>
+    </td>
+    <td className="px-3 py-3 whitespace-nowrap">
+      <Badge>{lead.customer.source}</Badge>
+    </td>
+    <td className="px-3 py-3 whitespace-nowrap">
+      <Badge variant="status">{lead.status}</Badge>
+    </td>
+    <td className="px-3 py-3">
+      <div className="text-[10px]">
+        <p className="font-semibold text-gray-900">{formatDate(lead.createdAt)}</p>
+        <p className="text-gray-500 truncate">{lead.customer.assignedSalesExecutive}</p>
+      </div>
+    </td>
+    <td className="px-3 py-3 whitespace-nowrap text-center">
+      <Link href={`/leads/${lead.id}`}>
+        <button className="p-2 text-primary-600 hover:text-white hover:bg-primary-600 font-semibold rounded-lg border-2 border-primary-600 transition-all" title="View Details">
+          <Eye className="h-4 w-4" />
+        </button>
+      </Link>
+    </td>
+  </tr>
 );

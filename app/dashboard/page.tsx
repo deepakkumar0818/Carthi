@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { 
   TrendingUp, 
   Users, 
@@ -13,21 +14,70 @@ import {
   Activity,
   Target,
   Award,
-  BarChart3
+  BarChart3,
+  Calendar,
+  Filter
 } from "lucide-react";
 import { mockLeads } from "@/lib/mockData";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/Badge";
+import { Button } from "@/components/Button";
 import Link from "next/link";
 
+type DateFilter = "today" | "last7days" | "last30days" | "thisMonth" | "lastMonth" | "all" | "custom";
+
 export default function DashboardPage() {
-  // Calculate statistics
-  const totalLeads = mockLeads.length;
-  const newLeads = mockLeads.filter(l => l.status === "New").length;
-  const closedLeads = mockLeads.filter(l => l.status === "Closed").length;
-  const rejectedLeads = mockLeads.filter(l => l.status === "Rejected").length;
+  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
+
+  const getDateRange = (filter: DateFilter): { start: Date; end: Date } | null => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    switch (filter) {
+      case "today":
+        return { start: today, end: now };
+      case "last7days":
+        return { start: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000), end: now };
+      case "last30days":
+        return { start: new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000), end: now };
+      case "thisMonth":
+        return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: now };
+      case "lastMonth":
+        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+        return { start: lastMonthStart, end: lastMonthEnd };
+      case "custom":
+        if (customStartDate && customEndDate) {
+          return { 
+            start: new Date(customStartDate), 
+            end: new Date(customEndDate + "T23:59:59") 
+          };
+        }
+        return null;
+      case "all":
+      default:
+        return null;
+    }
+  };
+
+  const filteredLeads = useMemo(() => {
+    const dateRange = getDateRange(dateFilter);
+    if (!dateRange) return mockLeads;
+
+    return mockLeads.filter(lead => {
+      const leadDate = new Date(lead.createdAt);
+      return leadDate >= dateRange.start && leadDate <= dateRange.end;
+    });
+  }, [dateFilter, customStartDate, customEndDate]);
+  // Calculate statistics based on filtered leads
+  const totalLeads = filteredLeads.length;
+  const newLeads = filteredLeads.filter(l => l.status === "New").length;
+  const closedLeads = filteredLeads.filter(l => l.status === "Closed").length;
+  const rejectedLeads = filteredLeads.filter(l => l.status === "Rejected").length;
   
-  const totalRevenue = mockLeads
+  const totalRevenue = filteredLeads
     .filter(l => l.status === "Closed" && l.valuation.finalOfferPrice)
     .reduce((sum, l) => sum + (l.valuation.finalOfferPrice || 0), 0);
   
@@ -35,12 +85,12 @@ export default function DashboardPage() {
   const avgDealValue = closedLeads > 0 ? totalRevenue / closedLeads : 0;
 
   // Recent leads
-  const recentLeads = [...mockLeads]
+  const recentLeads = [...filteredLeads]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
   // Top performers
-  const salesStats = mockLeads.reduce((acc, lead) => {
+  const salesStats = filteredLeads.reduce((acc, lead) => {
     const exec = lead.customer.assignedSalesExecutive;
     if (!acc[exec]) {
       acc[exec] = { total: 0, closed: 0, revenue: 0 };
@@ -63,16 +113,145 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Dashboard Overview
-          </h1>
-          <p className="text-gray-600">
-            Welcome back! Here's what's happening with your leads today.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                Dashboard Overview
+              </h1>
+              <p className="text-gray-600">
+                Welcome back! Here's what's happening with your leads.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Date Filter */}
+        <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-4 md:p-6 mb-6 md:mb-8">
+          <div className="flex items-center mb-3 md:mb-4">
+            <Calendar className="h-4 w-4 md:h-5 md:w-5 text-primary-600 mr-2" />
+            <h3 className="text-base md:text-lg font-bold text-gray-900">Filter by Date</h3>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 md:gap-3 mb-3 md:mb-4">
+            <button
+              onClick={() => setDateFilter("today")}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                dateFilter === "today"
+                  ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200"
+              }`}
+            >
+              Today
+            </button>
+            <button
+              onClick={() => setDateFilter("last7days")}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                dateFilter === "last7days"
+                  ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200"
+              }`}
+            >
+              Last 7 Days
+            </button>
+            <button
+              onClick={() => setDateFilter("last30days")}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                dateFilter === "last30days"
+                  ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200"
+              }`}
+            >
+              Last 30 Days
+            </button>
+            <button
+              onClick={() => setDateFilter("thisMonth")}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                dateFilter === "thisMonth"
+                  ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200"
+              }`}
+            >
+              This Month
+            </button>
+            <button
+              onClick={() => setDateFilter("lastMonth")}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                dateFilter === "lastMonth"
+                  ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200"
+              }`}
+            >
+              Last Month
+            </button>
+            <button
+              onClick={() => setDateFilter("all")}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                dateFilter === "all"
+                  ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200"
+              }`}
+            >
+              All Time
+            </button>
+            <button
+              onClick={() => setDateFilter("custom")}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                dateFilter === "custom"
+                  ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200"
+              }`}
+            >
+              Custom Range
+            </button>
+          </div>
+
+          {/* Custom Date Range Picker */}
+          {dateFilter === "custom" && (
+            <div className="flex flex-wrap gap-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          )}
+
+          {dateFilter !== "all" && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-800 font-medium">
+                📊 Showing data for: <span className="font-bold">
+                  {dateFilter === "today" && "Today"}
+                  {dateFilter === "last7days" && "Last 7 Days"}
+                  {dateFilter === "last30days" && "Last 30 Days"}
+                  {dateFilter === "thisMonth" && "This Month"}
+                  {dateFilter === "lastMonth" && "Last Month"}
+                  {dateFilter === "custom" && customStartDate && customEndDate && 
+                    `${new Date(customStartDate).toLocaleDateString()} - ${new Date(customEndDate).toLocaleDateString()}`}
+                </span> • {totalLeads} leads found
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Main Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           <MetricCard
             title="Total Leads"
             value={totalLeads.toString()}
@@ -108,7 +287,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Secondary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
           <StatCard
             title="New Leads"
             value={newLeads}
@@ -129,12 +308,12 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
           {/* Top Performers */}
-          <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                <Award className="h-6 w-6 mr-2 text-yellow-500" />
+          <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-4 md:p-6">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h3 className="text-lg md:text-xl font-bold text-gray-900 flex items-center">
+                <Award className="h-5 w-5 md:h-6 md:w-6 mr-2 text-yellow-500" />
                 Top Performers
               </h3>
               <Badge>This Month</Badge>
@@ -172,7 +351,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Lead Status Distribution */}
-          <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-6">
+          <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-4 md:p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900 flex items-center">
                 <BarChart3 className="h-6 w-6 mr-2 text-primary-600" />
@@ -182,25 +361,25 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <StatusBar
                 label="New"
-                count={mockLeads.filter(l => l.status === "New").length}
+                count={filteredLeads.filter(l => l.status === "New").length}
                 total={totalLeads}
                 color="from-blue-500 to-cyan-500"
               />
               <StatusBar
                 label="Contacted"
-                count={mockLeads.filter(l => l.status === "Contacted").length}
+                count={filteredLeads.filter(l => l.status === "Contacted").length}
                 total={totalLeads}
                 color="from-purple-500 to-pink-500"
               />
               <StatusBar
                 label="Valuation"
-                count={mockLeads.filter(l => l.status.includes("Valuation")).length}
+                count={filteredLeads.filter(l => l.status.includes("Valuation")).length}
                 total={totalLeads}
                 color="from-amber-500 to-orange-500"
               />
               <StatusBar
                 label="Negotiation"
-                count={mockLeads.filter(l => l.status === "Negotiation").length}
+                count={filteredLeads.filter(l => l.status === "Negotiation").length}
                 total={totalLeads}
                 color="from-indigo-500 to-purple-500"
               />
@@ -221,10 +400,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900 flex items-center">
-              <Clock className="h-6 w-6 mr-2 text-primary-600" />
+        <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-4 md:p-6">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h3 className="text-lg md:text-xl font-bold text-gray-900 flex items-center">
+              <Clock className="h-5 w-5 md:h-6 md:w-6 mr-2 text-primary-600" />
               Recent Leads
             </h3>
             <Link href="/leads" className="text-primary-600 font-semibold hover:text-primary-700 text-sm">
@@ -246,7 +425,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <p className="font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
-                      {lead.customer.name}
+                      {lead.customer.name} (Dealer)
                     </p>
                     <p className="text-sm text-gray-600">
                       {lead.vehicle.brand} {lead.vehicle.model} • {lead.vehicle.registrationYear}
@@ -287,21 +466,21 @@ const MetricCard = ({
   trend: { value: string; positive: boolean };
   subtitle: string;
 }) => (
-  <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-6 card-hover">
-    <div className="flex items-start justify-between mb-4">
-      <div className={`h-12 w-12 bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center shadow-lg`}>
-        <Icon className="h-6 w-6 text-white" />
+  <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-4 md:p-6 card-hover">
+    <div className="flex items-start justify-between mb-3 md:mb-4">
+      <div className={`h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br ${gradient} rounded-lg md:rounded-xl flex items-center justify-center shadow-lg`}>
+        <Icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
       </div>
-      <div className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold ${
+      <div className={`flex items-center space-x-1 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold ${
         trend.positive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
       }`}>
         {trend.positive ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
         <span>{trend.value}</span>
       </div>
     </div>
-    <p className="text-gray-600 text-sm font-medium mb-1">{title}</p>
-    <p className="text-3xl font-bold text-gray-900 mb-1">{value}</p>
-    <p className="text-xs text-gray-500">{subtitle}</p>
+    <p className="text-gray-600 text-xs md:text-sm font-medium mb-1">{title}</p>
+    <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{value}</p>
+    <p className="text-[10px] md:text-xs text-gray-500">{subtitle}</p>
   </div>
 );
 
@@ -317,14 +496,14 @@ const StatCard = ({
   icon: React.ElementType;
   color: string;
 }) => (
-  <div className="glass-effect rounded-2xl shadow-soft border border-white/20 p-6 card-hover">
+  <div className="glass-effect rounded-xl md:rounded-2xl shadow-soft border border-white/20 p-4 md:p-6 card-hover">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-gray-600 text-sm font-medium mb-2">{title}</p>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
+        <p className="text-gray-600 text-xs md:text-sm font-medium mb-2">{title}</p>
+        <p className="text-xl md:text-2xl font-bold text-gray-900">{value}</p>
       </div>
-      <div className={`h-14 w-14 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center shadow-lg`}>
-        <Icon className="h-7 w-7 text-white" />
+      <div className={`h-12 w-12 md:h-14 md:w-14 bg-gradient-to-br ${color} rounded-lg md:rounded-xl flex items-center justify-center shadow-lg`}>
+        <Icon className="h-6 w-6 md:h-7 md:w-7 text-white" />
       </div>
     </div>
   </div>
